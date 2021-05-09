@@ -18,6 +18,9 @@ namespace BooksApi.Infrastructure
             modelBuilder.Entity<Book>()
                 .HasMany(s => s.UsersBookOpinions);
 
+            modelBuilder.Entity<Book>().HasIndex(p => p.DeletionDate)
+                .HasDatabaseName($"IX_{nameof(Book)}_{nameof(Book.DeletionDate)}");
+
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
