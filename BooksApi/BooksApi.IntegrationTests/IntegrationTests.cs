@@ -5,6 +5,8 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -137,11 +139,17 @@ namespace BooksApi.IntegrationTests
             //3. Create user book opinion
             var userBookOpinionrRsponse = await _client.PostAsync("/BooksOpinions", new StringContent(JsonConvert.SerializeObject(userBookOpinion), Encoding.UTF8, "application/json"));
 
-            //then
             userBookOpinionrRsponse.EnsureSuccessStatusCode();
 
-            var responseGuid = JsonConvert.DeserializeObject<Guid>(await userBookOpinionrRsponse.Content.ReadAsStringAsync());
-            responseGuid.Should().NotBeEmpty();
+            //then
+            var getAllHttpResponse = await _client.GetAsync("/Books");
+
+            getAllHttpResponse.EnsureSuccessStatusCode();
+
+            var booksResult = JsonConvert.DeserializeObject<IList<Book>>(await getAllHttpResponse.Content.ReadAsStringAsync());
+            booksResult.Should().NotBeEmpty();
+            booksResult.All(s => s.DeletionDate == null).Should().BeTrue();
+            booksResult.First(s => s.Id == bookId).UsersBookOpinions.Count().Should().Be(1);
         }
     }
 }
